@@ -35,10 +35,10 @@
 #define STATE_ENEMY_REAR_OUT_BR 25
 
 #define STATE_ENEMY_FRONT_IN_LF   26
-#define STATE_ENEMY_FRONT_LF      27
-#define STATE_ENEMY_FRONT_BANK_LF 28
-#define STATE_ENEMY_FRONT_IN_RT   29
-#define STATE_ENEMY_FRONT_RT      30
+#define STATE_ENEMY_FRONT_IN_RT   27
+#define STATE_ENEMY_FRONT_LF      28
+#define STATE_ENEMY_FRONT_RT      29
+#define STATE_ENEMY_FRONT_BANK_LF 30
 #define STATE_ENEMY_FRONT_BANK_RT 31      
 
 #define BULLET_L_MOVE 80
@@ -91,7 +91,7 @@ level_element_update(char id, LevelElement element) {
 }
 
 LevelElement bullet_move(LevelElement element) {
-    char img = 0;
+    element.step = 0;
     if (element.state > STATE_HIDDEN)
     {
        element.y -=1;
@@ -99,8 +99,8 @@ LevelElement bullet_move(LevelElement element) {
        {
           case BULLET_L_MOVE:
           if (element.x < 64) {
-            if (element.x > 32) img = 1;
-            if (element.x > 48) img = 2;
+            if (element.x > 32) element.step = 1;
+            if (element.x > 48) element.step = 2;
             element.x +=4;
           } else {
             element.state = STATE_HIDDEN;
@@ -109,8 +109,8 @@ LevelElement bullet_move(LevelElement element) {
           
           case BULLET_R_MOVE:
           if (element.x > 64) {
-            if (element.x < 96) img = 1;
-            if (element.x < 80) img = 2;
+            if (element.x < 96) element.step = 1;
+            if (element.x < 80) element.step = 2;
             element.x -=4;
           } else {
             element.state = STATE_HIDDEN;
@@ -119,7 +119,7 @@ LevelElement bullet_move(LevelElement element) {
        }
     }
 
-    if (element.state > STATE_HIDDEN) sprites.drawSelfMasked(element.x, element.y, IMG_BULLET, img);
+    if (element.state > STATE_HIDDEN) sprites.drawSelfMasked(element.x, element.y, IMG_BULLET, element.step);
     return element;
 }
 
@@ -215,7 +215,76 @@ LevelElement debris_move(LevelElement element)
 //front enemy handling
 LevelElement front_enemy_handle(LevelElement element)
 {
+    if (element.state > STATE_HIDDEN) {
+      if (element.counter > 0) {
+        element.counter--;
+      } else {
+
+        element.counter = COUNTER_START;
+        
+        switch (element.state) {
+          case STATE_ENEMY_FRONT_IN_LF:
+          element.step = 1;
+          element.state = STATE_ENEMY_FRONT_LF;
+          break;
   
+          case STATE_ENEMY_FRONT_IN_RT:
+          element.step = 1;
+          element.state = STATE_ENEMY_FRONT_RT;
+          break;
+          
+          case STATE_ENEMY_FRONT_LF:
+          element.state = STATE_ENEMY_FRONT_BANK_LF;
+          element.step = 2;
+          break;
+  
+          case STATE_ENEMY_FRONT_RT:
+          element.state = STATE_ENEMY_FRONT_BANK_RT;
+          element.step = 3;
+          break;               
+        }  
+       }
+
+       if (element.state == STATE_ENEMY_FRONT_BANK_LF || element.state == STATE_ENEMY_FRONT_BANK_RT) {
+          if ((element.y - element.speed) > 0) {
+            element.y -= element.speed;
+          } else {
+            element.state = STATE_HIDDEN;
+          }
+  
+          if (element.state == STATE_ENEMY_FRONT_BANK_LF) {
+            if ((element.x - element.speed) > 0) {
+              element.x -= element.speed;
+            } else {
+              element.state = STATE_HIDDEN;
+            }
+          } else {
+             if ((element.x - element.speed) < 128) {
+              element.x += element.speed;
+            } else {
+              element.state = STATE_HIDDEN;
+            }         
+          }
+        }
+  }
+  if (element.state > STATE_HIDDEN) sprites.drawSelfMasked(element.x, element.y, IMG_ENEMY_FRONT, element.step);
+
+  if (element.state == STATE_HIDDEN) {
+        element.state = random(2)+26; 
+        switch(element.state) {
+          case STATE_ENEMY_FRONT_IN_LF:
+          element.x = 32;
+          element.y = 18;
+          break;
+
+          case STATE_ENEMY_FRONT_IN_RT:
+          element.x = 80;
+          element.y = 18;
+          break;
+        }
+        element.step = 0;
+        element.counter = COUNTER_START;
+  }
   return element;
 }
 
@@ -239,8 +308,6 @@ LevelElement rear_enemy_handle(LevelElement element)
 	//  STATE_ENEMY_REAR_IN_BL     STATE_ENEMY_REAR_IN_BM     STATE_ENEMY_REAR_IN_BR
 	//  STATE_ENEMY_REAR_OUT_TR    STATE_ENEMY_REAR_OUT_TM    STATE_ENEMY_REAR_OUT_TL
 
-  bool newEnemy = false;
-  
   if (element.state > STATE_HIDDEN) {
     if (element.counter > 0) {
       element.counter--;
@@ -439,6 +506,10 @@ void level_element_handle(char pitch, char roll)
 
       case TYPE_ENEMY_REAR:
       levelElements[i] = rear_enemy_handle(levelElements[i]);
+      break;
+
+      case TYPE_ENEMY_FRONT:
+      levelElements[i] = front_enemy_handle(levelElements[i]);
       break;
     }
     

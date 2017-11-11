@@ -85,10 +85,14 @@ void stateGamePlaying() {
   for (char i=0; i< 16; i++) draw_background_section (i, backSectionY[i]); 
   level_element_handle(pitch, roll);
 
+ sprites.drawSelfMasked(48,18, IMG_HUD, 0);
+ sprites.drawSelfMasked(80,18, IMG_HUD, 1);
+ sprites.drawSelfMasked(48,34, IMG_HUD, 2);
+ sprites.drawSelfMasked(80,34, IMG_HUD, 3);
+ sprites.drawSelfMasked(63,25, IMG_HUD, 4);
+
  sprites.drawOverwrite(0, 43, IMG_COCKPIT, 0);
  sprites.drawOverwrite(56, 48, IMG_HAND, hand_state);
- 
-
  
 };
 
@@ -99,6 +103,8 @@ void stateMenuPlay()
   
   level_element_add(TYPE_DEBRIS, H_CENTER, V_CENTER, STATE_DEBRIS_TL_MOVE, 2, 0);
   level_element_add(TYPE_ENEMY_REAR, 0, 0, STATE_ENEMY_REAR_IN_TL, 1, 0);
+  level_element_add(TYPE_ENEMY_FRONT, 32, 18, STATE_ENEMY_FRONT_IN_LF, 1, 0);
+  
   for (char i=0; i< 16; i++) backSectionY[i] = 8;
   
   stateGamePlaying();
