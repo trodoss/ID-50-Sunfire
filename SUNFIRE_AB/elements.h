@@ -5,8 +5,9 @@
 
 #define STATE_HIDDEN 0
 
-#define TYPE_DEBRIS 0
-#define TYPE_BULLET 1
+#define TYPE_DEBRIS  0
+#define TYPE_BULLET  1
+#define TYPE_MISSILE 2
 
 #define TYPE_ENEMY_REAR  10
 #define TYPE_ENEMY_FRONT 11
@@ -41,8 +42,13 @@
 #define STATE_ENEMY_FRONT_BANK_LF 30
 #define STATE_ENEMY_FRONT_BANK_RT 31      
 
+#define STATE_MISSILE_LAUNCH 50
+#define STATE_MISSILE_CLOSE  51
+
 #define BULLET_L_MOVE 80
 #define BULLET_R_MOVE 81
+
+#define STATE_EXPLODING 99
 
 #define STEP_LENGTH  2
 #define COUNTER_START    32
@@ -90,6 +96,17 @@ level_element_update(char id, LevelElement element) {
   levelElements[id] = element;
 }
 
+bool level_test_element (LevelElement element, char testX, char testY)
+{
+   if (element.type < 2) return false;
+   
+   if ((element.y + 16) < testY) return false;
+   if (element.y > (testY + 16)) return false;
+   if ((element.x + 16) < testX) return false;
+   if (element.x > (testX + 16)) return false;
+   return true;
+}
+
 LevelElement bullet_move(LevelElement element) {
     element.step = 0;
     if (element.state > STATE_HIDDEN)
@@ -119,7 +136,7 @@ LevelElement bullet_move(LevelElement element) {
        }
     }
 
-    if (element.state > STATE_HIDDEN) sprites.drawSelfMasked(element.x, element.y, IMG_BULLET, element.step);
+    if (element.state > STATE_HIDDEN)  sprites.drawSelfMasked(element.x, element.y, IMG_BULLET, element.step);
     return element;
 }
 
@@ -211,6 +228,54 @@ LevelElement debris_move(LevelElement element)
     return element;
 }
 
+//front enemy handling
+LevelElement missile_handle(LevelElement element)
+{
+    if (element.state > STATE_HIDDEN) {
+      if (element.counter > 0) {
+        element.counter--;
+      } else {
+
+        element.counter = COUNTER_START;
+
+        switch (element.state) {
+          case STATE_MISSILE_LAUNCH:
+          element.step++;
+          element.state = STATE_MISSILE_CLOSE;
+          break;
+
+          case STATE_MISSILE_CLOSE:
+          //to do: show death graphic
+          element.state = STATE_HIDDEN;
+          danger = false;
+          break;
+        }
+      }
+    }
+    if (element.state > STATE_HIDDEN) {
+      if (element.state == STATE_EXPLODING) {
+        sprites.drawSelfMasked(element.x, element.y, IMG_EXPLOSION, element.step);
+        if (element.step < 2) {
+              element.step++;
+        } else {
+            element.state = STATE_HIDDEN;
+        }        
+      } else {
+        sprites.drawSelfMasked(element.x, element.y, IMG_MISSILE, element.step);
+      }
+    }
+    return element;
+}
+
+missile_launch(char x, char y) {
+  danger = true;
+  LevelElement missile = level_element_get(2);
+  missile.step = 0;
+  missile.x = x+8;
+  missile.y = y;
+  missile.state = STATE_MISSILE_LAUNCH;
+  level_element_update(2, missile);
+}
 
 //front enemy handling
 LevelElement front_enemy_handle(LevelElement element)
@@ -235,13 +300,15 @@ LevelElement front_enemy_handle(LevelElement element)
           
           case STATE_ENEMY_FRONT_LF:
           element.state = STATE_ENEMY_FRONT_BANK_LF;
+          if (!danger) missile_launch(element.x, element.y);
           element.step = 2;
           break;
   
           case STATE_ENEMY_FRONT_RT:
           element.state = STATE_ENEMY_FRONT_BANK_RT;
+          if (!danger) missile_launch(element.x, element.y);
           element.step = 3;
-          break;               
+          break;      
         }  
        }
 
@@ -267,7 +334,18 @@ LevelElement front_enemy_handle(LevelElement element)
           }
         }
   }
-  if (element.state > STATE_HIDDEN) sprites.drawSelfMasked(element.x, element.y, IMG_ENEMY_FRONT, element.step);
+  if (element.state > STATE_HIDDEN) {
+    if (element.state == STATE_EXPLODING) { 
+      sprites.drawSelfMasked(element.x, element.y, IMG_EXPLOSION, element.step);
+      if (element.step < 2) {
+              element.step++;
+      } else {
+            element.state = STATE_HIDDEN;
+        }
+    } else {
+      sprites.drawSelfMasked(element.x, element.y, IMG_ENEMY_FRONT, element.step);
+    }
+  }
 
   if (element.state == STATE_HIDDEN) {
         element.state = random(2)+26; 
@@ -308,7 +386,7 @@ LevelElement rear_enemy_handle(LevelElement element)
 	//  STATE_ENEMY_REAR_IN_BL     STATE_ENEMY_REAR_IN_BM     STATE_ENEMY_REAR_IN_BR
 	//  STATE_ENEMY_REAR_OUT_TR    STATE_ENEMY_REAR_OUT_TM    STATE_ENEMY_REAR_OUT_TL
 
-  if (element.state > STATE_HIDDEN) {
+  if ((element.state > STATE_HIDDEN) && (element.state != STATE_EXPLODING)) {
     if (element.counter > 0) {
       element.counter--;
     } else {
@@ -443,7 +521,18 @@ LevelElement rear_enemy_handle(LevelElement element)
     }
 
    
-  if (element.state > STATE_HIDDEN) sprites.drawSelfMasked(element.x, element.y, IMG_ENEMY_REAR, enemy_img);
+  if (element.state > STATE_HIDDEN) {
+    if (element.state == STATE_EXPLODING) {
+      sprites.drawSelfMasked(element.x, element.y, IMG_EXPLOSION, element.step);
+      if (element.step < 2) {
+              element.step++;
+      } else {
+            element.state = STATE_HIDDEN;
+      } 
+    } else {
+      sprites.drawSelfMasked(element.x, element.y, IMG_ENEMY_REAR, enemy_img);
+    }
+  }
 
   if (element.state == STATE_HIDDEN) {
         element.state = random(2)+10; 
@@ -494,6 +583,18 @@ void level_element_handle(char pitch, char roll)
   for (char i=0; i < element_count; i++)
   {
     if (levelElements[i].type != TYPE_BULLET) levelElements[i] = element_adjust(levelElements[i], pitch, roll);
+
+    //test for hit with bullets
+    for (char b = 0; b < 2; b++) {
+      LevelElement bullet = levelElements[b];
+      if (bullet.state > STATE_HIDDEN  && bullet.step > 1) {
+        if (level_test_element(levelElements[i], 64, 32)) {
+          if (levelElements[i].type == TYPE_MISSILE) danger = false;
+          levelElements[i].state = STATE_EXPLODING;
+          levelElements[i].step = 0;
+        }
+      }
+    }
     
     switch (levelElements[i].type) {
       case TYPE_DEBRIS:
@@ -504,6 +605,10 @@ void level_element_handle(char pitch, char roll)
       levelElements[i] = bullet_move(levelElements[i]);
       break;
 
+      case TYPE_MISSILE:
+      levelElements[i] = missile_handle(levelElements[i]);
+      break;
+      
       case TYPE_ENEMY_REAR:
       levelElements[i] = rear_enemy_handle(levelElements[i]);
       break;

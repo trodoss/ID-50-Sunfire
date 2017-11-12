@@ -93,18 +93,30 @@ void stateGamePlaying() {
 
  sprites.drawOverwrite(0, 43, IMG_COCKPIT, 0);
  sprites.drawOverwrite(56, 48, IMG_HAND, hand_state);
+
+ if (danger) {
+   if (blinking) {
+    sprites.drawOverwrite(12, 54, IMG_DANGER, 0);
+   } else {
+    sprites.drawOverwrite(12, 54, IMG_DANGER, 1);
+   }
+ }
  
 };
 
 void stateMenuPlay()
 {
+  //bullets
   level_element_add(TYPE_BULLET,0,0,STATE_HIDDEN, 2,0);
   level_element_add(TYPE_BULLET,0,0,STATE_HIDDEN, 2,0);
-  
+  //missle
+  level_element_add(TYPE_MISSILE,0,0,STATE_HIDDEN, 2,0);
+  //debris animation
   level_element_add(TYPE_DEBRIS, H_CENTER, V_CENTER, STATE_DEBRIS_TL_MOVE, 2, 0);
+  //enemies
   level_element_add(TYPE_ENEMY_REAR, 0, 0, STATE_ENEMY_REAR_IN_TL, 1, 0);
   level_element_add(TYPE_ENEMY_FRONT, 32, 18, STATE_ENEMY_FRONT_IN_LF, 1, 0);
-  
+  //background
   for (char i=0; i< 16; i++) backSectionY[i] = 8;
   
   stateGamePlaying();
