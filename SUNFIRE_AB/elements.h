@@ -51,7 +51,7 @@
 #define STATE_EXPLODING 99
 
 #define STEP_LENGTH  2
-#define COUNTER_START    32
+#define COUNTER_START 32
 
 
 #define MAX_ELEMENT_RECORDS 12
@@ -99,7 +99,7 @@ level_element_update(char id, LevelElement element) {
 bool level_test_element (LevelElement element, char testX, char testY)
 {
    if (element.type < 2) return false;
-   
+   if ((element.state == STATE_HIDDEN) ||(element.state == STATE_EXPLODING)) return false;
    if ((element.y + 16) < testY) return false;
    if (element.y > (testY + 16)) return false;
    if ((element.x + 16) < testX) return false;
@@ -240,7 +240,7 @@ LevelElement missile_handle(LevelElement element)
 
         switch (element.state) {
           case STATE_MISSILE_LAUNCH:
-          element.step++;
+          element.step = 2;
           element.state = STATE_MISSILE_CLOSE;
           break;
 
@@ -261,7 +261,7 @@ LevelElement missile_handle(LevelElement element)
             element.state = STATE_HIDDEN;
         }        
       } else {
-        sprites.drawSelfMasked(element.x, element.y, IMG_MISSILE, element.step);
+        sprites.drawSelfMasked(element.x, element.y, IMG_MISSILE, element.step + (element.counter % 2));
       }
     }
     return element;

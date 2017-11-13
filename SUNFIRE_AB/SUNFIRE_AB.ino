@@ -5,7 +5,7 @@ Sunfire - Space Flight Simulator/Shooter
 */
 
 //determine the game
-#define GAME_ID 99
+#define GAME_ID 50
 
 #include "globals.h"
 #include "menu.h"
@@ -28,8 +28,8 @@ void setup() {
   arduboy.begin();
   arduboy.setFrameRate(30);                                 // set the frame rate of the game at 30 fps
   arduboy.initRandomSeed();                                 // This sets the random to more random, remove this if no random is needed !
-//  ATM.play(themeSong);
-stateMenuPlay();
+  //ATM.play(themeSong);
+  stateMenuPlay();
 }
 
 
