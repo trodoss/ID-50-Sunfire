@@ -2,12 +2,12 @@
 #define MENU_H
 
 #include "globals.h"
+#include "font.h"
 
-/*
 
 void drawTitleScreen()
 {
- 
+  sprites.drawSelfMasked(20, 12, IMG_TITLE, 0);
 }
 
 void stateMenuIntro()
@@ -23,7 +23,6 @@ void stateMenuIntro()
 
 void stateMenuMain()
 {
-
   drawTitleScreen();
   
   if (arduboy.justPressed(RIGHT_BUTTON) && (menuSelection < 5)) menuSelection++;
@@ -56,6 +55,5 @@ void stateMenuSoundfx()
     gameState = STATE_MENU_MAIN;
   }
 }
-*/
 
 #endif

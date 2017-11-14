@@ -40,7 +40,6 @@ void draw_background_section (unsigned char strip, char y) {
 void stateGamePlaying() {
  gameState = STATE_GAME_PLAYING;
 
-
 // arduboy.drawPixel(H_CENTER,V_CENTER,WHITE);
 
  hand_state = 1;

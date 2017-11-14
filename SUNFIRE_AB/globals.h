@@ -16,9 +16,7 @@
 #define STATE_MENU_SOUNDFX           5
 
 //define game states (on main menu)
-#define STATE_GAME_SELECT_GAME_MODE   6
-#define STATE_GAME_SELECT_PLAYER_MODE 7
-#define STATE_GAME_PLAYING            8
+#define STATE_GAME_PLAYING           6
 
 
 Arduboy2Base arduboy;
