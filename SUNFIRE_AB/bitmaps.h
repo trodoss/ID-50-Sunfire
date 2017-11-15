@@ -607,4 +607,9 @@ const unsigned char PROGMEM fontNormal[] =
   // FRAME 95
   0x1f, 0x1f, 0x1f, 0x1f,
 };
+
+const char PROGMEM text_info[] = {"2017 TRODOSS"};                // 13
+const char PROGMEM text_pointer[] = {">"};                        // 1
+const char PROGMEM text_menu[] = {"HELP PLAY INFO CONF"};         // 20
+const char PROGMEM text_sound[] = {"SOUND  OFF  ON"};             // 14
 #endif
