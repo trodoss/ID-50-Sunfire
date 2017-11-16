@@ -620,4 +620,13 @@ void level_element_handle(char pitch, char roll)
     
   }
 }
+
+void level_element_draw_display () {
+  for (char i=0; i < element_count; i++)
+  {
+    if (levelElements[i].type == TYPE_ENEMY_REAR || levelElements[i].type == TYPE_ENEMY_FRONT) {
+      arduboy.drawPixel((levelElements[i].x / 8)+16, (levelElements[i].y / 8)+54,WHITE);
+    }
+  }
+}
 #endif

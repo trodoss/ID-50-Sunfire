@@ -37,7 +37,6 @@ void loop() {
   arduboy.pollButtons();
   arduboy.clear();
 ((FunctionPointer) pgm_read_word (&mainGameLoop[gameState]))();
-//  stateGamePlaying();
   arduboy.display();
   if (arduboy.everyXFrames(3)) blinking = !blinking;
 }

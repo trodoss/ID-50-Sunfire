@@ -99,6 +99,9 @@ void stateGamePlaying() {
    } else {
     sprites.drawOverwrite(12, 54, IMG_DANGER, 1);
    }
+ } else {
+   sprites.drawOverwrite(12, 54, IMG_DISPLAY, 0);
+   level_element_draw_display();   
  }
  
 };
