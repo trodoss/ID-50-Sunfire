@@ -13,6 +13,7 @@ char hand_state = 1;
 char backSectionY[16];
 char pitch = 0;
 char roll = 0;
+char x_change = 0;
 
 void set_background_pitch() {
   char offset = pitch;
@@ -41,7 +42,7 @@ void stateGamePlaying() {
  gameState = STATE_GAME_PLAYING;
 
 // arduboy.drawPixel(H_CENTER,V_CENTER,WHITE);
-
+ x_change = 0;
  hand_state = 1;
  if (arduboy.pressed(RIGHT_BUTTON)) {
   hand_state = 2;
@@ -56,10 +57,12 @@ void stateGamePlaying() {
  if (arduboy.pressed(DOWN_BUTTON)) {
   hand_state = 3;
    if (roll > -8) roll--;
+   x_change = -1;
  }
  if (arduboy.pressed(UP_BUTTON)) {
   hand_state = 4;
    if (roll < 16) roll++;
+   x_change = 1;
  }
 
  if (arduboy.pressed(B_BUTTON)) {
@@ -82,7 +85,7 @@ void stateGamePlaying() {
   set_background_pitch();
   set_background_roll();
   for (char i=0; i< 16; i++) draw_background_section (i, backSectionY[i]); 
-  level_element_handle(pitch, roll);
+  level_element_handle(pitch, x_change);
 
  sprites.drawSelfMasked(48,18, IMG_HUD, 0);
  sprites.drawSelfMasked(80,18, IMG_HUD, 1);
@@ -112,12 +115,14 @@ void stateMenuPlay()
   level_element_add(TYPE_BULLET,0,0,STATE_HIDDEN, 2,0);
   level_element_add(TYPE_BULLET,0,0,STATE_HIDDEN, 2,0);
   //missle
-  level_element_add(TYPE_MISSILE,0,0,STATE_HIDDEN, 2,0);
+  level_element_add(TYPE_MISSILE,0,0,STATE_HIDDEN, 2, 1);
   //debris animation
-  level_element_add(TYPE_DEBRIS, H_CENTER, V_CENTER, STATE_DEBRIS_TL_MOVE, 2, 0);
+  level_element_add(TYPE_DEBRIS, H_CENTER, V_CENTER, STATE_DEBRIS_TL_MOVE, 2, 1);
   //enemies
-  level_element_add(TYPE_ENEMY_REAR, 0, 0, STATE_ENEMY_REAR_IN_TL, 1, 0);
-  level_element_add(TYPE_ENEMY_FRONT, 32, 18, STATE_ENEMY_FRONT_IN_LF, 1, 0);
+  level_element_add(TYPE_ENEMY_REAR, 0, 0, STATE_ENEMY_REAR_IN_TL, 1, 1);
+  level_element_add(TYPE_ENEMY_FRONT, 32, 18, STATE_ENEMY_FRONT_IN_LF, 1, 1);
+
+  level_element_add(TYPE_ENEMY_CARRIER, 32, 32, STATE_ENEMY_CARRIER_SM, 1, 30);
   //background
   for (char i=0; i< 16; i++) backSectionY[i] = 8;
   

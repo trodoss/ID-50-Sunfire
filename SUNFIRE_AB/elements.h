@@ -12,6 +12,8 @@
 #define TYPE_ENEMY_REAR  10
 #define TYPE_ENEMY_FRONT 11
 
+#define TYPE_ENEMY_CARRIER 12
+
 #define STATE_DEBRIS_TL_MOVE 1
 #define STATE_DEBRIS_TR_MOVE 2
 #define STATE_DEBRIS_BL_MOVE 3
@@ -41,6 +43,10 @@
 #define STATE_ENEMY_FRONT_RT      29
 #define STATE_ENEMY_FRONT_BANK_LF 30
 #define STATE_ENEMY_FRONT_BANK_RT 31      
+
+#define STATE_ENEMY_CARRIER_SM    32
+#define STATE_ENEMY_CARRIER_MD    33
+#define STATE_ENEMY_CARRIER_LG    34
 
 #define STATE_MISSILE_LAUNCH 50
 #define STATE_MISSILE_CLOSE  51
@@ -228,7 +234,7 @@ LevelElement debris_move(LevelElement element)
     return element;
 }
 
-//front enemy handling
+//missile handling
 LevelElement missile_handle(LevelElement element)
 {
     if (element.state > STATE_HIDDEN) {
@@ -251,6 +257,15 @@ LevelElement missile_handle(LevelElement element)
           break;
         }
       }
+
+      if ((element.x > 120) || (element.x < 8)) {
+        element.state = STATE_HIDDEN;
+        danger = false;
+      }
+      if ((element.y > 56) || (element.y < 8)) {
+        element.state = STATE_HIDDEN;
+        danger = false;
+      }
     }
     if (element.state > STATE_HIDDEN) {
       if (element.state == STATE_EXPLODING) {
@@ -259,6 +274,7 @@ LevelElement missile_handle(LevelElement element)
               element.step++;
         } else {
             element.state = STATE_HIDDEN;
+            danger = false;
         }        
       } else {
         sprites.drawSelfMasked(element.x, element.y, IMG_MISSILE, element.step + (element.counter % 2));
@@ -271,6 +287,7 @@ missile_launch(char x, char y) {
   danger = true;
   LevelElement missile = level_element_get(2);
   missile.step = 0;
+  missile.life = 1;
   missile.x = x+8;
   missile.y = y;
   missile.state = STATE_MISSILE_LAUNCH;
@@ -349,6 +366,7 @@ LevelElement front_enemy_handle(LevelElement element)
 
   if (element.state == STATE_HIDDEN) {
         element.state = random(2)+26; 
+        element.life = 1;
         switch(element.state) {
           case STATE_ENEMY_FRONT_IN_LF:
           element.x = 32;
@@ -536,6 +554,7 @@ LevelElement rear_enemy_handle(LevelElement element)
 
   if (element.state == STATE_HIDDEN) {
         element.state = random(2)+10; 
+        element.life = 1;
         switch(element.state) {
           case STATE_ENEMY_REAR_IN_TL:
           element.x = 0;
@@ -553,7 +572,79 @@ LevelElement rear_enemy_handle(LevelElement element)
   return element;
 }
 
-LevelElement element_adjust(LevelElement element, char pitch, char roll)
+//missile handling
+LevelElement enemy_carrier_handle(LevelElement element)
+{
+    if (element.state > STATE_HIDDEN) {
+      if (element.counter > 0) {
+        element.counter--;
+      } else {
+
+        element.counter = COUNTER_START;
+
+        switch (element.state) {
+          case STATE_ENEMY_CARRIER_SM:
+          element.step++;
+          if (element.step > 1) {
+            element.step = 0;
+            element.state = STATE_ENEMY_CARRIER_MD;
+          }
+          break;
+
+          case STATE_ENEMY_CARRIER_MD:
+          element.step++;
+          if (element.step > 1) {
+            element.step = 0;
+            element.state = STATE_ENEMY_CARRIER_LG;
+          }
+          break;
+
+          case STATE_ENEMY_CARRIER_LG:
+          element.step++;
+          if (element.step > 1) element.state = STATE_HIDDEN;
+          break;
+        }
+      }
+
+      if ((element.x > 120) || (element.x < 8)) {
+        element.state = STATE_HIDDEN;
+        danger = false;
+      }
+      if ((element.y > 56) || (element.y < 8)) {
+        element.state = STATE_HIDDEN;
+        danger = false;
+      }
+    }
+    if (element.state > STATE_HIDDEN) {
+      if (element.state == STATE_EXPLODING) {
+        sprites.drawSelfMasked(element.x, element.y, IMG_EXPLOSION, element.step);
+        if (element.step < 2) {
+              element.step++;
+        } else {
+            element.state = STATE_HIDDEN;
+            danger = false;
+        }        
+      } else {
+          switch (element.state) {
+            case STATE_ENEMY_CARRIER_SM:
+            sprites.drawSelfMasked(element.x, element.y, IMG_CARRIER_SM, element.step);
+            break;
+
+            case STATE_ENEMY_CARRIER_MD:
+            sprites.drawSelfMasked(element.x, element.y, IMG_CARRIER_MD, element.step);
+            break;
+            
+            case STATE_ENEMY_CARRIER_LG:
+            sprites.drawSelfMasked(element.x, element.y, IMG_CARRIER_LG, 0);
+            break;
+          }
+      }
+    }
+    return element;
+}
+
+
+LevelElement element_adjust(LevelElement element, char pitch, char x_change)
 {
   if (element.state > STATE_HIDDEN)
   {
@@ -574,6 +665,16 @@ LevelElement element_adjust(LevelElement element, char pitch, char roll)
             if ( element.counter % 2 == 0) element.x +=1;
           }
       }
+
+      if (x_change > 0)
+      {
+        element.y +=1;
+      }
+
+      if (x_change < 0)
+      {
+        element.y -=1;
+      }
   }
   return element;
 }
@@ -589,9 +690,13 @@ void level_element_handle(char pitch, char roll)
       LevelElement bullet = levelElements[b];
       if (bullet.state > STATE_HIDDEN  && bullet.step > 1) {
         if (level_test_element(levelElements[i], 64, 32)) {
-          if (levelElements[i].type == TYPE_MISSILE) danger = false;
-          levelElements[i].state = STATE_EXPLODING;
-          levelElements[i].step = 0;
+          
+          levelElements[i].life--;
+          if (levelElements[i].life < 1) {
+             if (levelElements[i].type == TYPE_MISSILE) danger = false;
+             levelElements[i].state = STATE_EXPLODING;
+             levelElements[i].step = 0;
+          } 
         }
       }
     }
@@ -615,6 +720,10 @@ void level_element_handle(char pitch, char roll)
 
       case TYPE_ENEMY_FRONT:
       levelElements[i] = front_enemy_handle(levelElements[i]);
+      break;
+
+      case TYPE_ENEMY_CARRIER:
+      levelElements[i] = enemy_carrier_handle(levelElements[i]);
       break;
     }
     
