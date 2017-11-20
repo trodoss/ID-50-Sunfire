@@ -81,7 +81,20 @@ void stateGamePlaying() {
     level_element_update(1, bullet);   
    }
  }
- 
+
+  if (arduboy.pressed(A_BUTTON)) {
+   LevelElement plasma = level_element_get(2);
+   
+   if (plasma.state == STATE_HIDDEN) {
+    plasma.step = 0;
+    plasma.counter = 32;
+    plasma.state = PLASMA_NEAR;
+    plasma.x = 64;
+    plasma.y = 24;
+    level_element_update(2, plasma);
+   }
+  }
+   
   set_background_pitch();
   set_background_roll();
   for (char i=0; i< 16; i++) draw_background_section (i, backSectionY[i]); 
@@ -114,6 +127,8 @@ void stateMenuPlay()
   //bullets
   level_element_add(TYPE_BULLET,0,0,STATE_HIDDEN, 2,0);
   level_element_add(TYPE_BULLET,0,0,STATE_HIDDEN, 2,0);
+  //plasma
+  level_element_add(TYPE_PLASMA,0,0,STATE_HIDDEN, 2,0);
   //missle
   level_element_add(TYPE_MISSILE,0,0,STATE_HIDDEN, 2, 1);
   //debris animation

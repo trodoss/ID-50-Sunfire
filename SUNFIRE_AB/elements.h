@@ -7,7 +7,8 @@
 
 #define TYPE_DEBRIS  0
 #define TYPE_BULLET  1
-#define TYPE_MISSILE 2
+#define TYPE_PLASMA  2
+#define TYPE_MISSILE 3
 
 #define TYPE_ENEMY_REAR  10
 #define TYPE_ENEMY_FRONT 11
@@ -53,6 +54,9 @@
 
 #define BULLET_L_MOVE 80
 #define BULLET_R_MOVE 81
+
+#define PLASMA_NEAR 82
+#define PLASMA_FAR  83
 
 #define STATE_EXPLODING 99
 
@@ -104,7 +108,7 @@ level_element_update(char id, LevelElement element) {
 
 bool level_test_element (LevelElement element, char testX, char testY)
 {
-   if (element.type < 2) return false;
+   if (element.type < 3) return false;
    if ((element.state == STATE_HIDDEN) ||(element.state == STATE_EXPLODING)) return false;
    if ((element.y + 16) < testY) return false;
    if (element.y > (testY + 16)) return false;
@@ -143,6 +147,33 @@ LevelElement bullet_move(LevelElement element) {
     }
 
     if (element.state > STATE_HIDDEN)  sprites.drawSelfMasked(element.x, element.y, IMG_BULLET, element.step);
+    return element;
+}
+
+LevelElement plasma_move(LevelElement element) {
+    if (element.state > STATE_HIDDEN)
+    {
+
+       if (element.counter > 0) {
+             element.counter--;
+       } else {
+             element.counter = COUNTER_START;
+             switch (element.state)
+             {       
+                case PLASMA_NEAR:
+                element.state = PLASMA_FAR;
+                element.step = 2;
+                break;
+                
+                case PLASMA_FAR:
+                element.state = STATE_HIDDEN;
+                break;
+             }
+       }
+       
+    }
+
+    if (element.state > STATE_HIDDEN)  sprites.drawSelfMasked(element.x, element.y, IMG_PLASMA, element.step + (element.counter % 2));
     return element;
 }
 
@@ -285,13 +316,13 @@ LevelElement missile_handle(LevelElement element)
 
 missile_launch(char x, char y) {
   danger = true;
-  LevelElement missile = level_element_get(2);
+  LevelElement missile = level_element_get(3);
   missile.step = 0;
   missile.life = 1;
   missile.x = x+8;
   missile.y = y;
   missile.state = STATE_MISSILE_LAUNCH;
-  level_element_update(2, missile);
+  level_element_update(3, missile);
 }
 
 //front enemy handling
@@ -701,6 +732,15 @@ void level_element_handle(char pitch, char roll)
       }
     }
     
+    //tesr plasma hit
+    if (levelElements[2].state > STATE_HIDDEN && levelElements[2].step > 2) {
+         if (level_test_element(levelElements[i], levelElements[2].x, levelElements[2].y)) {
+             if (levelElements[i].type == TYPE_MISSILE) danger = false;
+             levelElements[i].state = STATE_EXPLODING;
+             levelElements[i].step = 0;
+          }     
+    }
+      
     switch (levelElements[i].type) {
       case TYPE_DEBRIS:
       levelElements[i] = debris_move(levelElements[i]);
@@ -709,6 +749,10 @@ void level_element_handle(char pitch, char roll)
       case TYPE_BULLET:
       levelElements[i] = bullet_move(levelElements[i]);
       break;
+
+      case TYPE_PLASMA:
+      levelElements[i] = plasma_move(levelElements[i]);
+      break;      
 
       case TYPE_MISSILE:
       levelElements[i] = missile_handle(levelElements[i]);
