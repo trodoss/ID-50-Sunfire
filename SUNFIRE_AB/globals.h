@@ -23,6 +23,7 @@
 Arduboy2Base arduboy;
 Sprites sprites;
 
+unsigned long score = 0;
 //ATMsynth ATM;
 
 

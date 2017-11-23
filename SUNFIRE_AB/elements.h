@@ -108,12 +108,15 @@ level_element_update(char id, LevelElement element) {
 
 bool level_test_element (LevelElement element, char testX, char testY)
 {
+  char test_size = 16;
    if (element.type < 3) return false;
    if ((element.state == STATE_HIDDEN) ||(element.state == STATE_EXPLODING)) return false;
-   if ((element.y + 16) < testY) return false;
-   if (element.y > (testY + 16)) return false;
-   if ((element.x + 16) < testX) return false;
-   if (element.x > (testX + 16)) return false;
+
+   if ((element.type == TYPE_ENEMY_CARRIER)&&(element.type == STATE_ENEMY_CARRIER_LG)) test_size = 32;
+   if ((element.y + test_size) < testY) return false;
+   if (element.y > (testY + test_size)) return false;
+   if ((element.x + test_size) < testX) return false;
+   if (element.x > (testX + test_size)) return false;
    return true;
 }
 
@@ -727,13 +730,14 @@ void level_element_handle(char pitch, char roll)
              if (levelElements[i].type == TYPE_MISSILE) danger = false;
              levelElements[i].state = STATE_EXPLODING;
              levelElements[i].step = 0;
+             score += 50;
           } 
         }
       }
     }
     
     //tesr plasma hit
-    if (levelElements[2].state > STATE_HIDDEN && levelElements[2].step > 2) {
+    if (levelElements[2].state > STATE_HIDDEN && levelElements[2].step > 1) {
          if (level_test_element(levelElements[i], levelElements[2].x, levelElements[2].y)) {
              if (levelElements[i].type == TYPE_MISSILE) danger = false;
              levelElements[i].state = STATE_EXPLODING;

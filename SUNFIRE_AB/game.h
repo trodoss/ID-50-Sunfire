@@ -56,13 +56,18 @@ void stateGamePlaying() {
  
  if (arduboy.pressed(DOWN_BUTTON)) {
   hand_state = 3;
-   if (roll > -8) roll--;
-   x_change = -1;
+   if (roll > -8) {
+       roll--;
+       x_change = -1;
+   }
+
  }
  if (arduboy.pressed(UP_BUTTON)) {
   hand_state = 4;
-   if (roll < 16) roll++;
-   x_change = 1;
+   if (roll < 16) {
+       roll++;
+       x_change = 1;
+   }
  }
 
  if (arduboy.pressed(B_BUTTON)) {
@@ -119,6 +124,8 @@ void stateGamePlaying() {
    sprites.drawOverwrite(12, 54, IMG_DISPLAY, 0);
    level_element_draw_display();   
  }
+
+ print_number(92, 54, score);
  
 };
 
@@ -140,7 +147,7 @@ void stateMenuPlay()
   level_element_add(TYPE_ENEMY_CARRIER, 32, 32, STATE_ENEMY_CARRIER_SM, 1, 30);
   //background
   for (char i=0; i< 16; i++) backSectionY[i] = 8;
-  
+
   stateGamePlaying();
  
 };

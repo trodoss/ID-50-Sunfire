@@ -20,17 +20,7 @@ void print_p(uint8_t x, uint8_t y, const char* s) {
   }
 }
 
-void print_number(uint8_t x, uint8_t y, int n) {
-  char buf[8];
-  print_p(x, y, itoa(n, buf, 10));
-}
-
-void print_score(uint8_t x, uint8_t y, int n) {
-  if (n < 10)
-  {
-    sprites.drawSelfMasked(x, y, fontNormal, 16);
-    x +=5;
-  }
+void print_number(uint8_t x, uint8_t y, unsigned long n) {
   char buf[8];
   print_p(x, y, itoa(n, buf, 10));
 }
