@@ -13,7 +13,7 @@ void drawTitleScreen()
 void stateMenuIntro()
 {
   globalCounter++;
-  sprites.drawSelfMasked(34, 4, T_arg, 0);
+  sprites.drawSelfMasked(34, 4, IMG_LOGO, 0);
   if (globalCounter > 120)
   {
     gameState = STATE_MENU_MAIN;
