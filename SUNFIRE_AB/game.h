@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include "globals.h"
 #include "elements.h"
+#include "sound_data.h"
 
 char hand_state = 1;
 
@@ -148,6 +149,7 @@ void stateMenuPlay()
   //background
   for (char i=0; i< 16; i++) backSectionY[i] = 8;
 
+  ATM.play(playing);
   stateGamePlaying();
  
 };

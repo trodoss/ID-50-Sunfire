@@ -24,7 +24,7 @@ Arduboy2Base arduboy;
 Sprites sprites;
 
 unsigned long score = 0;
-//ATMsynth ATM;
+ATMsynth ATM;
 
 
 byte gameState = STATE_MENU_INTRO;   // start the game with the TEAM a.r.g. logo
